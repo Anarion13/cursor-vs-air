@@ -65,32 +65,34 @@
         font-variation-settings: 'wdth' 100;
       }
 
-      .scores {
+      .stats {
         display: flex;
+        align-items: center;
         gap: 32px;
-        align-items: flex-start;
         padding-bottom: 4px;
+      }
+
+      .arcs-svg {
+        flex-shrink: 0;
+      }
+
+      .score-labels {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
       }
 
       .score-item {
         display: flex;
-        flex-direction: column;
-      }
-
-      .score-label {
-        font-size: 15px;
-        font-weight: 380;
-        line-height: 20px;
-        letter-spacing: 0.01px;
-        color: rgba(255, 255, 255, 0.52);
-        white-space: nowrap;
+        align-items: baseline;
+        gap: 8px;
       }
 
       .score-number {
         font-family: 'Komuna', sans-serif;
         font-weight: 129;
-        font-size: 48px;
-        line-height: 60px;
+        font-size: 36px;
+        line-height: 40px;
         text-transform: lowercase;
         font-variation-settings: 'wdth' 100;
       }
@@ -105,6 +107,14 @@
 
       .score-number.tied {
         color: #fff;
+      }
+
+      .score-label {
+        font-size: 14px;
+        font-weight: 380;
+        line-height: 20px;
+        color: rgba(255, 255, 255, 0.52);
+        white-space: nowrap;
       }
 
       .table-container {
@@ -188,13 +198,18 @@
           margin-bottom: 32px;
         }
 
-        .scores {
-          gap: 24px;
+        .stats {
+          gap: 20px;
+        }
+
+        .arcs-svg {
+          width: 90px;
+          height: 52px;
         }
 
         .score-number {
-          font-size: 36px;
-          line-height: 44px;
+          font-size: 28px;
+          line-height: 32px;
         }
 
         thead th {
@@ -221,18 +236,21 @@
     <main class="page">
       <div class="top-bar">
         <h1>air vs cursor</h1>
-        <div class="scores">
-          <div class="score-item">
-            <span class="score-label">Air wins</span>
-            <span class="score-number air" id="air-wins">0</span>
-          </div>
-          <div class="score-item">
-            <span class="score-label">Cursor wins</span>
-            <span class="score-number cursor" id="cursor-wins">0</span>
-          </div>
-          <div class="score-item">
-            <span class="score-label">Tied</span>
-            <span class="score-number tied" id="tied-count">0</span>
+        <div class="stats">
+          <svg class="arcs-svg" id="arcs" width="120" height="68" viewBox="0 0 120 68" fill="none"></svg>
+          <div class="score-labels">
+            <div class="score-item">
+              <span class="score-number air" id="air-wins">0</span>
+              <span class="score-label">Air wins</span>
+            </div>
+            <div class="score-item">
+              <span class="score-number cursor" id="cursor-wins">0</span>
+              <span class="score-label">Cursor wins</span>
+            </div>
+            <div class="score-item">
+              <span class="score-number tied" id="tied-count">0</span>
+              <span class="score-label">Tied</span>
+            </div>
           </div>
         </div>
       </div>
@@ -277,6 +295,7 @@
       const airWinsEl = document.getElementById("air-wins");
       const cursorWinsEl = document.getElementById("cursor-wins");
       const tiedEl = document.getElementById("tied-count");
+      const arcsSvg = document.getElementById("arcs");
 
       function getWinner(row) {
         if (row.air === row.cursor) return "tie";
@@ -295,6 +314,33 @@
         return `<img src="${src}" alt="${label}" title="${label}" />`;
       }
 
+      function renderArcs(airWins, cursorWins) {
+        const total = rows.length;
+        const cx = 60;
+        const cy = 62;
+        const outerR = 52;
+        const innerR = 38;
+        const strokeW = 6;
+        const halfCircumOuter = Math.PI * outerR;
+        const halfCircumInner = Math.PI * innerR;
+
+        const airFill = (airWins / total) * halfCircumOuter;
+        const cursorFill = (cursorWins / total) * halfCircumInner;
+
+        arcsSvg.innerHTML = `
+          <path d="M ${cx - outerR} ${cy} A ${outerR} ${outerR} 0 1 1 ${cx + outerR} ${cy}"
+                stroke="rgba(255,255,255,0.06)" stroke-width="${strokeW}" fill="none" stroke-linecap="round" />
+          <path d="M ${cx - outerR} ${cy} A ${outerR} ${outerR} 0 1 1 ${cx + outerR} ${cy}"
+                stroke="#3BA0CF" stroke-width="${strokeW}" fill="none" stroke-linecap="round"
+                stroke-dasharray="${halfCircumOuter}" stroke-dashoffset="${halfCircumOuter - airFill}" />
+          <path d="M ${cx - innerR} ${cy} A ${innerR} ${innerR} 0 1 1 ${cx + innerR} ${cy}"
+                stroke="rgba(255,255,255,0.06)" stroke-width="${strokeW}" fill="none" stroke-linecap="round" />
+          <path d="M ${cx - innerR} ${cy} A ${innerR} ${innerR} 0 1 1 ${cx + innerR} ${cy}"
+                stroke="#EC5D6F" stroke-width="${strokeW}" fill="none" stroke-linecap="round"
+                stroke-dasharray="${halfCircumInner}" stroke-dashoffset="${halfCircumInner - cursorFill}" />
+        `;
+      }
+
       function render() {
         body.innerHTML = rows.map((row) => `
           <tr>
@@ -311,6 +357,8 @@
         airWinsEl.textContent = airWins;
         cursorWinsEl.textContent = cursorWins;
         tiedEl.textContent = ties;
+
+        renderArcs(airWins, cursorWins);
       }
 
       render();
