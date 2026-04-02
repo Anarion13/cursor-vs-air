@@ -5,237 +5,112 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Air vs Cursor</title>
     <style>
-      :root {
-        --bg: #0f0f0f;
-        --surface: #1a1a1a;
-        --surface-strong: #222222;
-        --surface-soft: rgba(255, 255, 255, 0.03);
-        --border: #2a2a2a;
-        --text: #e5e5e5;
-        --muted: #888888;
-        --air: #7c6af7;
-        --air-soft: rgba(124, 106, 247, 0.18);
-        --cursor: #3b82f6;
-        --cursor-soft: rgba(59, 130, 246, 0.18);
-        --green: #22c55e;
-        --red: #ef4444;
-        --shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
-        --radius-xl: 28px;
-        --radius-lg: 18px;
-        --radius-md: 14px;
+      @font-face {
+        font-family: 'Komuna';
+        src: url('src/fonts/KomunaVar.ttf') format('truetype');
+        font-weight: 100 900;
+        font-display: swap;
       }
 
       * {
         box-sizing: border-box;
+        margin: 0;
+        padding: 0;
       }
 
       html {
         color-scheme: dark;
-        scroll-behavior: smooth;
       }
 
       body {
-        margin: 0;
         min-height: 100vh;
-        background:
-          radial-gradient(circle at top left, rgba(124, 106, 247, 0.22), transparent 30%),
-          radial-gradient(circle at top right, rgba(59, 130, 246, 0.2), transparent 32%),
-          linear-gradient(180deg, #141414 0%, #0f0f0f 35%, #0b0b0b 100%);
-        color: var(--text);
-        font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+        background: #16181B;
+        color: rgba(255, 255, 255, 0.85);
+        font-family: Inter, 'Segoe UI', 'Helvetica Neue', sans-serif;
       }
 
-      body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
+      .header-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: auto;
         pointer-events: none;
-        background-image:
-          linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
-        background-size: 36px 36px;
-        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.85), transparent);
+        z-index: 0;
       }
 
       .page {
-        width: min(1180px, calc(100vw - 32px));
-        margin: 0 auto;
-        padding: 56px 0 72px;
-      }
-
-      .hero {
         position: relative;
-        overflow: hidden;
-        padding: 36px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: var(--radius-xl);
-        background:
-          linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015)),
-          rgba(17, 17, 17, 0.88);
-        box-shadow: var(--shadow);
+        z-index: 1;
+        width: min(1040px, calc(100vw - 48px));
+        margin: 0 auto;
+        padding: 120px 0 72px;
       }
 
-      .hero::after {
-        content: "";
-        position: absolute;
-        inset: auto -10% -40% auto;
-        width: 340px;
-        height: 340px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(124, 106, 247, 0.28), transparent 65%);
-        filter: blur(8px);
+      .top-bar {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        margin-bottom: 48px;
       }
 
       h1 {
-        margin: 0 0 14px;
-        font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
-        font-size: clamp(2.8rem, 6vw, 5rem);
-        line-height: 0.95;
-        letter-spacing: -0.05em;
+        font-family: 'Komuna', sans-serif;
+        font-weight: 129;
+        font-size: clamp(2.5rem, 5.5vw, 4rem);
+        line-height: 1;
+        letter-spacing: -0.01em;
+        text-transform: lowercase;
+        color: #fff;
+        font-variation-settings: 'wdth' 100;
       }
 
-      .subtitle {
-        max-width: 720px;
-        margin: 0;
-        color: #b4b4b4;
-        font-size: 1.04rem;
-        line-height: 1.65;
+      .scores {
+        display: flex;
+        gap: 32px;
+        align-items: flex-start;
+        padding-bottom: 4px;
       }
 
-      .summary {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 14px;
-        margin-top: 28px;
-      }
-
-      .scorecard {
-        position: relative;
-        overflow: hidden;
-        padding: 18px 20px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: var(--radius-lg);
-        background: rgba(255, 255, 255, 0.04);
-      }
-
-      .scorecard::before {
-        content: "";
-        position: absolute;
-        inset: 0 auto 0 0;
-        width: 4px;
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.65), transparent);
-      }
-
-      .scorecard.air::before {
-        background: linear-gradient(180deg, var(--air), transparent);
-      }
-
-      .scorecard.cursor::before {
-        background: linear-gradient(180deg, var(--cursor), transparent);
-      }
-
-      .scorecard.tie::before {
-        background: linear-gradient(180deg, #9ca3af, transparent);
+      .score-item {
+        display: flex;
+        flex-direction: column;
       }
 
       .score-label {
-        margin: 0 0 8px;
-        color: var(--muted);
-        font-size: 0.78rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
+        font-size: 15px;
+        font-weight: 380;
+        line-height: 20px;
+        letter-spacing: 0.01px;
+        color: rgba(255, 255, 255, 0.52);
+        white-space: nowrap;
       }
 
-      .score-value {
-        display: flex;
-        align-items: baseline;
-        gap: 10px;
-        margin: 0;
+      .score-number {
+        font-family: 'Komuna', sans-serif;
+        font-weight: 129;
+        font-size: 48px;
+        line-height: 60px;
+        text-transform: lowercase;
+        font-variation-settings: 'wdth' 100;
       }
 
-      .score-value strong {
-        font-size: clamp(1.8rem, 3vw, 2.4rem);
-        line-height: 1;
+      .score-number.air {
+        color: #3BA0CF;
       }
 
-      .score-value span {
-        color: #b5b5b5;
+      .score-number.cursor {
+        color: #EC5D6F;
       }
 
-      .panel {
-        margin-top: 22px;
-        padding: 22px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: var(--radius-xl);
-        background: rgba(14, 14, 14, 0.86);
-        box-shadow: var(--shadow);
+      .score-number.tied {
+        color: #fff;
       }
 
-      .toolbar {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        margin-bottom: 18px;
-      }
-
-      .toolbar-copy {
-        max-width: 560px;
-      }
-
-      .toolbar-copy h2 {
-        margin: 0 0 6px;
-        font-size: 1.08rem;
-      }
-
-      .toolbar-copy p {
-        margin: 0;
-        color: var(--muted);
-      }
-
-      .filters {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-
-      .filter {
-        appearance: none;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.04);
-        color: var(--text);
-        cursor: pointer;
-        font: inherit;
-        padding: 10px 16px;
-        transition:
-          background 150ms ease,
-          border-color 150ms ease,
-          transform 150ms ease;
-      }
-
-      .filter:hover {
-        background: rgba(255, 255, 255, 0.08);
-        transform: translateY(-1px);
-      }
-
-      .filter:focus-visible {
-        outline: 2px solid var(--air);
-        outline-offset: 2px;
-      }
-
-      .filter.active,
-      .filter[aria-pressed="true"] {
-        border-color: rgba(124, 106, 247, 0.45);
-        background: linear-gradient(135deg, rgba(124, 106, 247, 0.22), rgba(59, 130, 246, 0.14));
-      }
-
-      .table-wrap {
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: calc(var(--radius-xl) - 4px);
-        background: rgba(255, 255, 255, 0.02);
-        overflow: visible;
+      .table-container {
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        overflow: hidden;
       }
 
       table {
@@ -245,457 +120,200 @@
       }
 
       thead th {
-        position: sticky;
-        top: 0;
-        z-index: 3;
-        padding: 16px 18px;
-        background: rgba(15, 15, 15, 0.96);
-        backdrop-filter: blur(16px);
-        color: #a9a9a9;
-        font-size: 0.82rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
+        padding: 15px 24px;
+        font-family: 'Komuna', sans-serif;
+        font-weight: 129;
+        font-size: 24px;
+        line-height: 31px;
+        text-transform: lowercase;
+        color: rgba(255, 255, 255, 0.52);
         text-align: left;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.04);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        font-variation-settings: 'wdth' 100;
       }
 
-      thead th:nth-child(2),
-      thead th:nth-child(3) {
-        text-align: center;
+
+      th.col-feature {
+        width: 44%;
+      }
+
+      th.col-air {
+        width: 20%;
+      }
+
+      th.col-cursor {
+        width: 36%;
       }
 
       tbody tr {
-        transition: background 150ms ease;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       }
 
-      tbody tr[data-row]:nth-of-type(even) {
-        background: var(--surface-soft);
+      tbody tr:nth-child(even) {
+        background: rgba(255, 255, 255, 0.03);
       }
 
-      tbody tr[data-row]:hover {
-        background: rgba(255, 255, 255, 0.07);
+      tbody tr:last-child {
+        border-bottom: none;
       }
 
-      tbody tr.hidden,
-      tbody tr.category-header.hidden {
-        display: none;
-      }
-
-      .category-header th {
-        padding: 16px 18px 12px;
-        border-top: 1px solid rgba(255, 255, 255, 0.06);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        background:
-          linear-gradient(90deg, rgba(124, 106, 247, 0.12), rgba(59, 130, 246, 0.06)),
-          rgba(255, 255, 255, 0.03);
-        color: #bbbbbb;
-        font-size: 0.76rem;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        text-align: left;
-      }
 
       tbody td {
-        padding: 16px 18px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        vertical-align: top;
+        padding: 15px 24px;
+        vertical-align: middle;
+        font-size: 18px;
+        line-height: 24px;
+        font-weight: 380;
+        letter-spacing: 0.004em;
+        color: rgba(255, 255, 255, 0.85);
       }
 
-      td.feature {
-        width: 42%;
-        font-weight: 600;
-      }
 
-      td.status {
-        width: 12%;
-        text-align: center;
-      }
-
-      td.notes {
-        width: 34%;
-        color: #b4b4b4;
-      }
-
-      .chip {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 44px;
-        padding: 7px 10px;
-        border-radius: 999px;
-        border: 1px solid transparent;
-        font-size: 1rem;
-        font-weight: 700;
-        line-height: 1;
-      }
-
-      .chip--yes {
-        border-color: rgba(34, 197, 94, 0.22);
-        background: rgba(34, 197, 94, 0.12);
-        color: var(--green);
-      }
-
-      .chip--no {
-        border-color: rgba(239, 68, 68, 0.22);
-        background: rgba(239, 68, 68, 0.1);
-        color: var(--red);
-      }
-
-      .notes span {
-        display: inline-block;
-        max-width: 26ch;
-      }
-
-      .winner-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 7px 12px;
-        border-radius: 999px;
-        font-size: 0.82rem;
-        font-weight: 600;
-      }
-
-      .winner-pill.air {
-        background: var(--air-soft);
-        color: #d8d1ff;
-      }
-
-      .winner-pill.cursor {
-        background: var(--cursor-soft);
-        color: #d7e6ff;
-      }
-
-      .winner-pill.tie {
-        background: rgba(156, 163, 175, 0.14);
-        color: #d1d5db;
-      }
-
-      .legend {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 16px;
-      }
-
-      .legend-title {
-        margin: 20px 0 8px;
-        color: var(--muted);
-        font-size: 0.78rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-
-      @media (max-width: 920px) {
-        .page {
-          width: min(100vw - 24px, 1180px);
-          padding: 28px 0 48px;
-        }
-
-        .hero,
-        .panel {
-          padding: 22px;
-        }
-
-        .summary {
-          grid-template-columns: 1fr;
-        }
-
-        thead th,
-        tbody td,
-        .category-header th {
-          padding-left: 14px;
-          padding-right: 14px;
-        }
-
-        td.notes {
-          width: 28%;
-        }
+      td.status img {
+        width: 36px;
+        height: 36px;
       }
 
       @media (max-width: 760px) {
-        h1 {
-          font-size: clamp(2.5rem, 14vw, 3.8rem);
+        .page {
+          width: min(100vw - 24px, 1040px);
+          padding: 80px 0 48px;
         }
 
-        .toolbar {
+        .top-bar {
+          flex-direction: column;
           align-items: flex-start;
+          gap: 24px;
+          margin-bottom: 32px;
         }
 
-        .filters {
-          width: 100%;
+        .scores {
+          gap: 24px;
         }
 
-        .filter {
-          flex: 1 1 calc(50% - 10px);
-          text-align: center;
+        .score-number {
+          font-size: 36px;
+          line-height: 44px;
         }
 
-        thead th,
-        tbody td,
-        .category-header th {
-          padding: 12px;
-        }
-
-        thead th,
-        .category-header th {
-          font-size: 0.72rem;
+        thead th {
+          font-size: 18px;
+          padding: 14px 16px;
         }
 
         tbody td {
-          font-size: 0.92rem;
+          padding: 14px 16px;
+          font-size: 16px;
+          line-height: 22px;
         }
 
-        td.feature {
-          width: 46%;
-          font-size: 0.98rem;
-        }
-
-        td.status {
-          width: 14%;
-        }
-
-        td.notes {
-          width: 26%;
-          font-size: 0.85rem;
-        }
-
-        .chip {
-          min-width: 40px;
-          padding: 6px 9px;
+        td.status img {
+          width: 28px;
+          height: 28px;
         }
       }
     </style>
   </head>
   <body>
+    <img class="header-bg" src="src/svg/header.svg" alt="" aria-hidden="true" />
+
     <main class="page">
-      <section class="hero" aria-labelledby="page-title">
-        <h1 id="page-title">Air vs Cursor</h1>
-        <p class="subtitle">
-          A compact, offline-friendly comparison of agent workflows, platform access,
-          task handling, and editor features. Filter the table by winner to isolate
-          where each product leads.
-        </p>
-
-        <section class="summary" aria-label="Score summary">
-          <article class="scorecard air">
-            <p class="score-label">Air support count</p>
-            <p class="score-value">
-              <strong id="air-score">0</strong>
-              <span>features available</span>
-            </p>
-          </article>
-          <article class="scorecard cursor">
-            <p class="score-label">Cursor support count</p>
-            <p class="score-value">
-              <strong id="cursor-score">0</strong>
-              <span>features available</span>
-            </p>
-          </article>
-          <article class="scorecard tie">
-            <p class="score-label">Head-to-head ties</p>
-            <p class="score-value">
-              <strong id="tie-score">0</strong>
-              <span>matched outcomes</span>
-            </p>
-          </article>
-        </section>
-
-        <p class="legend-title">Exclusive wins</p>
-        <div class="legend" id="legend" aria-label="Exclusive winner breakdown"></div>
-      </section>
-
-      <section class="panel" aria-labelledby="comparison-heading">
-        <div class="toolbar">
-          <div class="toolbar-copy">
-            <h2 id="comparison-heading">Feature matrix</h2>
-            <p>Use the filters to show all rows, only Air wins, only Cursor wins, or ties.</p>
+      <div class="top-bar">
+        <h1>air vs cursor</h1>
+        <div class="scores">
+          <div class="score-item">
+            <span class="score-label">Air wins</span>
+            <span class="score-number air" id="air-wins">0</span>
           </div>
-          <div class="filters" role="toolbar" aria-label="Comparison filters">
-            <button class="filter active" type="button" data-filter="all" aria-pressed="true">All</button>
-            <button class="filter" type="button" data-filter="air" aria-pressed="false">Air wins</button>
-            <button class="filter" type="button" data-filter="cursor" aria-pressed="false">Cursor wins</button>
-            <button class="filter" type="button" data-filter="tie" aria-pressed="false">Tied</button>
+          <div class="score-item">
+            <span class="score-label">Cursor wins</span>
+            <span class="score-number cursor" id="cursor-wins">0</span>
+          </div>
+          <div class="score-item">
+            <span class="score-label">Tied</span>
+            <span class="score-number tied" id="tied-count">0</span>
           </div>
         </div>
+      </div>
 
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Feature</th>
-                <th scope="col">Air</th>
-                <th scope="col">Cursor</th>
-                <th scope="col">Notes</th>
-              </tr>
-            </thead>
-            <tbody id="comparison-body"></tbody>
-          </table>
-        </div>
-      </section>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-feature" scope="col">feature</th>
+              <th class="col-air" scope="col">air</th>
+              <th class="col-cursor" scope="col">cursor</th>
+            </tr>
+          </thead>
+          <tbody id="comparison-body"></tbody>
+        </table>
+      </div>
     </main>
 
     <script>
       const rows = [
-        { category: "Agent Capabilities", feature: "Multi-agent support", air: true, cursor: false, note: "" },
-        { category: "Agent Capabilities", feature: "Run many agents in parallel", air: true, cursor: true, note: "" },
-        { category: "Agent Capabilities", feature: "Multi-workspaces", air: false, cursor: true, note: "" },
-        { category: "Agent Capabilities", feature: "Comments", air: true, cursor: false, note: "" },
-
-        { category: "Platform & Access", feature: "Start from Desktop", air: true, cursor: true, note: "" },
-        { category: "Platform & Access", feature: "Start from Web", air: true, cursor: true, note: "" },
-        { category: "Platform & Access", feature: "Start from Mobile", air: false, cursor: true, note: "" },
-        { category: "Platform & Access", feature: "Start from Slack/GitHub", air: false, cursor: true, note: "" },
-        { category: "Platform & Access", feature: "Windows support", air: false, cursor: true, note: "" },
-        { category: "Platform & Access", feature: "Linux support", air: false, cursor: true, note: "" },
-
-        { category: "Task Management", feature: "Move tasks from Local → Cloud", air: false, cursor: true, note: "" },
-        { category: "Task Management", feature: "Move tasks from Cloud → Local", air: false, cursor: true, note: "" },
-        { category: "Task Management", feature: "Create PR", air: false, cursor: true, note: "" },
-        { category: "Task Management", feature: "Commit & Push", air: false, cursor: true, note: "" },
-
-        { category: "Editor", feature: "Editor with LSPs", air: true, cursor: true, note: "" },
-        { category: "Editor", feature: "Integrated browser", air: true, cursor: true, note: "Not nearly on the same level though" },
-        { category: "Editor", feature: "Plugins", air: false, cursor: true, note: "" },
-        { category: "Editor", feature: "Voice input", air: false, cursor: true, note: "" }
+        { feature: "Multi-agent support", air: true, cursor: false },
+        { feature: "Run many agents in parallel", air: true, cursor: true },
+        { feature: "Multi-workspaces", air: false, cursor: true },
+        { feature: "Comments", air: true, cursor: false },
+        { feature: "Start from Desktop", air: true, cursor: true },
+        { feature: "Start from Web", air: true, cursor: true },
+        { feature: "Start from Mobile", air: false, cursor: true },
+        { feature: "Start from Slack/GitHub", air: false, cursor: true },
+        { feature: "Windows support", air: false, cursor: true },
+        { feature: "Linux support", air: false, cursor: true },
+        { feature: "Move tasks from Local \u2192 Cloud", air: false, cursor: true },
+        { feature: "Move tasks from Cloud \u2192 Local", air: false, cursor: true },
+        { feature: "Create PR", air: false, cursor: true },
+        { feature: "Commit & Push", air: false, cursor: true },
+        { feature: "Editor with LSPs", air: true, cursor: true },
+        { feature: "Integrated browser", air: true, cursor: true },
+        { feature: "Plugins", air: false, cursor: true },
+        { feature: "Voice input", air: false, cursor: true }
       ];
 
       const body = document.getElementById("comparison-body");
-      const airScore = document.getElementById("air-score");
-      const cursorScore = document.getElementById("cursor-score");
-      const tieScore = document.getElementById("tie-score");
-      const legend = document.getElementById("legend");
-      const filters = Array.from(document.querySelectorAll(".filter"));
+      const airWinsEl = document.getElementById("air-wins");
+      const cursorWinsEl = document.getElementById("cursor-wins");
+      const tiedEl = document.getElementById("tied-count");
 
       function getWinner(row) {
-        if (row.air === row.cursor) {
-          return "tie";
-        }
+        if (row.air === row.cursor) return "tie";
         return row.air ? "air" : "cursor";
       }
 
       function escapeHtml(value) {
-        return String(value).replace(/[&<>"]/g, (character) => {
-          const entities = {
-            "&": "&amp;",
-            "<": "&lt;",
-            ">": "&gt;",
-            "\"": "&quot;"
-          };
-
-          return entities[character];
-        });
+        return String(value).replace(/[&<>"]/g, (c) => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;"
+        })[c]);
       }
 
       function renderIcon(value) {
+        const src = value ? "src/svg/good.svg" : "src/svg/bad.svg";
         const label = value ? "Supported" : "Not supported";
-        const symbol = value ? "✓" : "✕";
-        const modifier = value ? "yes" : "no";
-        return `<span class="chip chip--${modifier}" aria-label="${label}" title="${label}">${symbol}</span>`;
+        return `<img src="${src}" alt="${label}" title="${label}" />`;
       }
 
-      function renderTable() {
-        const categories = rows.reduce((accumulator, row) => {
-          accumulator[row.category] ||= [];
-          accumulator[row.category].push(row);
-          return accumulator;
-        }, {});
+      function render() {
+        body.innerHTML = rows.map((row) => `
+          <tr>
+            <td class="feature">${escapeHtml(row.feature)}</td>
+            <td class="status">${renderIcon(row.air)}</td>
+            <td class="status">${renderIcon(row.cursor)}</td>
+          </tr>
+        `).join("");
 
-        body.innerHTML = Object.entries(categories)
-          .map(([category, categoryRows]) => {
-            const rowMarkup = categoryRows
-              .map((row) => {
-                const winner = getWinner(row);
-                const safeCategory = escapeHtml(category);
-                const safeFeature = escapeHtml(row.feature);
-                const note = row.note ? `<span>${escapeHtml(row.note)}</span>` : "";
+        const airWins = rows.filter((r) => getWinner(r) === "air").length;
+        const cursorWins = rows.filter((r) => getWinner(r) === "cursor").length;
+        const ties = rows.filter((r) => getWinner(r) === "tie").length;
 
-                return `
-                  <tr data-row data-category="${safeCategory}" data-winner="${winner}">
-                    <td class="feature">${safeFeature}</td>
-                    <td class="status" data-label="Air">${renderIcon(row.air)}</td>
-                    <td class="status" data-label="Cursor">${renderIcon(row.cursor)}</td>
-                    <td class="notes" data-label="Notes">${note}</td>
-                  </tr>
-                `;
-              })
-              .join("");
-
-            const safeCategory = escapeHtml(category);
-
-            return `
-              <tr class="category-header" data-category-header="${safeCategory}">
-                <th colspan="4" scope="rowgroup">${safeCategory}</th>
-              </tr>
-              ${rowMarkup}
-            `;
-          })
-          .join("");
+        airWinsEl.textContent = airWins;
+        cursorWinsEl.textContent = cursorWins;
+        tiedEl.textContent = ties;
       }
 
-      function updateScores() {
-        const airSupport = rows.filter((row) => row.air).length;
-        const cursorSupport = rows.filter((row) => row.cursor).length;
-        const airWins = rows.filter((row) => getWinner(row) === "air").length;
-        const cursorWins = rows.filter((row) => getWinner(row) === "cursor").length;
-        const ties = rows.filter((row) => getWinner(row) === "tie").length;
-
-        airScore.textContent = airSupport;
-        cursorScore.textContent = cursorSupport;
-        tieScore.textContent = ties;
-
-        legend.innerHTML = `
-          <span class="winner-pill air">Air wins ${airWins}</span>
-          <span class="winner-pill cursor">Cursor wins ${cursorWins}</span>
-          <span class="winner-pill tie">Tied ${ties}</span>
-        `;
-      }
-
-      function syncCategoryHeaders() {
-        const headers = Array.from(body.querySelectorAll(".category-header"));
-
-        headers.forEach((header, index) => {
-          const nextHeader = headers[index + 1];
-          let row = header.nextElementSibling;
-          let visibleRows = 0;
-
-          while (row && row !== nextHeader) {
-            if (row.matches("[data-row]") && !row.classList.contains("hidden")) {
-              visibleRows += 1;
-            }
-            row = row.nextElementSibling;
-          }
-
-          header.classList.toggle("hidden", visibleRows === 0);
-        });
-      }
-
-      function applyFilter(filterValue) {
-        const dataRows = Array.from(body.querySelectorAll("[data-row]"));
-
-        dataRows.forEach((row) => {
-          const matches = filterValue === "all" || row.dataset.winner === filterValue;
-          row.classList.toggle("hidden", !matches);
-        });
-
-        syncCategoryHeaders();
-      }
-
-      filters.forEach((button) => {
-        button.addEventListener("click", () => {
-          filters.forEach((filter) => {
-            const isActive = filter === button;
-            filter.classList.toggle("active", isActive);
-            filter.setAttribute("aria-pressed", String(isActive));
-          });
-
-          applyFilter(button.dataset.filter);
-        });
-      });
-
-      renderTable();
-      updateScores();
-      applyFilter("all");
+      render();
     </script>
   </body>
 </html>
