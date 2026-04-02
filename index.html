@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Air vs Cursor</title>
+    <style>
+      :root {
+        --bg: #0f0f0f;
+        --surface: #1a1a1a;
+        --surface-strong: #222222;
+        --surface-soft: rgba(255, 255, 255, 0.03);
+        --border: #2a2a2a;
+        --text: #e5e5e5;
+        --muted: #888888;
+        --air: #7c6af7;
+        --air-soft: rgba(124, 106, 247, 0.18);
+        --cursor: #3b82f6;
+        --cursor-soft: rgba(59, 130, 246, 0.18);
+        --green: #22c55e;
+        --red: #ef4444;
+        --shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+        --radius-xl: 28px;
+        --radius-lg: 18px;
+        --radius-md: 14px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        color-scheme: dark;
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at top left, rgba(124, 106, 247, 0.22), transparent 30%),
+          radial-gradient(circle at top right, rgba(59, 130, 246, 0.2), transparent 32%),
+          linear-gradient(180deg, #141414 0%, #0f0f0f 35%, #0b0b0b 100%);
+        color: var(--text);
+        font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+        background-size: 36px 36px;
+        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.85), transparent);
+      }
+
+      .page {
+        width: min(1180px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 56px 0 72px;
+      }
+
+      .hero {
+        position: relative;
+        overflow: hidden;
+        padding: 36px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: var(--radius-xl);
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015)),
+          rgba(17, 17, 17, 0.88);
+        box-shadow: var(--shadow);
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        inset: auto -10% -40% auto;
+        width: 340px;
+        height: 340px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(124, 106, 247, 0.28), transparent 65%);
+        filter: blur(8px);
+      }
+
+      h1 {
+        margin: 0 0 14px;
+        font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+        font-size: clamp(2.8rem, 6vw, 5rem);
+        line-height: 0.95;
+        letter-spacing: -0.05em;
+      }
+
+      .subtitle {
+        max-width: 720px;
+        margin: 0;
+        color: #b4b4b4;
+        font-size: 1.04rem;
+        line-height: 1.65;
+      }
+
+      .summary {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 28px;
+      }
+
+      .scorecard {
+        position: relative;
+        overflow: hidden;
+        padding: 18px 20px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: var(--radius-lg);
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .scorecard::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 4px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.65), transparent);
+      }
+
+      .scorecard.air::before {
+        background: linear-gradient(180deg, var(--air), transparent);
+      }
+
+      .scorecard.cursor::before {
+        background: linear-gradient(180deg, var(--cursor), transparent);
+      }
+
+      .scorecard.tie::before {
+        background: linear-gradient(180deg, #9ca3af, transparent);
+      }
+
+      .score-label {
+        margin: 0 0 8px;
+        color: var(--muted);
+        font-size: 0.78rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .score-value {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        margin: 0;
+      }
+
+      .score-value strong {
+        font-size: clamp(1.8rem, 3vw, 2.4rem);
+        line-height: 1;
+      }
+
+      .score-value span {
+        color: #b5b5b5;
+      }
+
+      .panel {
+        margin-top: 22px;
+        padding: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: var(--radius-xl);
+        background: rgba(14, 14, 14, 0.86);
+        box-shadow: var(--shadow);
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+
+      .toolbar-copy {
+        max-width: 560px;
+      }
+
+      .toolbar-copy h2 {
+        margin: 0 0 6px;
+        font-size: 1.08rem;
+      }
+
+      .toolbar-copy p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .filter {
+        appearance: none;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text);
+        cursor: pointer;
+        font: inherit;
+        padding: 10px 16px;
+        transition:
+          background 150ms ease,
+          border-color 150ms ease,
+          transform 150ms ease;
+      }
+
+      .filter:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateY(-1px);
+      }
+
+      .filter:focus-visible {
+        outline: 2px solid var(--air);
+        outline-offset: 2px;
+      }
+
+      .filter.active,
+      .filter[aria-pressed="true"] {
+        border-color: rgba(124, 106, 247, 0.45);
+        background: linear-gradient(135deg, rgba(124, 106, 247, 0.22), rgba(59, 130, 246, 0.14));
+      }
+
+      .table-wrap {
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: calc(var(--radius-xl) - 4px);
+        background: rgba(255, 255, 255, 0.02);
+        overflow: visible;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+
+      thead th {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        padding: 16px 18px;
+        background: rgba(15, 15, 15, 0.96);
+        backdrop-filter: blur(16px);
+        color: #a9a9a9;
+        font-size: 0.82rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      thead th:nth-child(2),
+      thead th:nth-child(3) {
+        text-align: center;
+      }
+
+      tbody tr {
+        transition: background 150ms ease;
+      }
+
+      tbody tr[data-row]:nth-of-type(even) {
+        background: var(--surface-soft);
+      }
+
+      tbody tr[data-row]:hover {
+        background: rgba(255, 255, 255, 0.07);
+      }
+
+      tbody tr.hidden,
+      tbody tr.category-header.hidden {
+        display: none;
+      }
+
+      .category-header th {
+        padding: 16px 18px 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        background:
+          linear-gradient(90deg, rgba(124, 106, 247, 0.12), rgba(59, 130, 246, 0.06)),
+          rgba(255, 255, 255, 0.03);
+        color: #bbbbbb;
+        font-size: 0.76rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        text-align: left;
+      }
+
+      tbody td {
+        padding: 16px 18px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        vertical-align: top;
+      }
+
+      td.feature {
+        width: 42%;
+        font-weight: 600;
+      }
+
+      td.status {
+        width: 12%;
+        text-align: center;
+      }
+
+      td.notes {
+        width: 34%;
+        color: #b4b4b4;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1;
+      }
+
+      .chip--yes {
+        border-color: rgba(34, 197, 94, 0.22);
+        background: rgba(34, 197, 94, 0.12);
+        color: var(--green);
+      }
+
+      .chip--no {
+        border-color: rgba(239, 68, 68, 0.22);
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--red);
+      }
+
+      .notes span {
+        display: inline-block;
+        max-width: 26ch;
+      }
+
+      .winner-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 12px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 600;
+      }
+
+      .winner-pill.air {
+        background: var(--air-soft);
+        color: #d8d1ff;
+      }
+
+      .winner-pill.cursor {
+        background: var(--cursor-soft);
+        color: #d7e6ff;
+      }
+
+      .winner-pill.tie {
+        background: rgba(156, 163, 175, 0.14);
+        color: #d1d5db;
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .legend-title {
+        margin: 20px 0 8px;
+        color: var(--muted);
+        font-size: 0.78rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      @media (max-width: 920px) {
+        .page {
+          width: min(100vw - 24px, 1180px);
+          padding: 28px 0 48px;
+        }
+
+        .hero,
+        .panel {
+          padding: 22px;
+        }
+
+        .summary {
+          grid-template-columns: 1fr;
+        }
+
+        thead th,
+        tbody td,
+        .category-header th {
+          padding-left: 14px;
+          padding-right: 14px;
+        }
+
+        td.notes {
+          width: 28%;
+        }
+      }
+
+      @media (max-width: 760px) {
+        h1 {
+          font-size: clamp(2.5rem, 14vw, 3.8rem);
+        }
+
+        .toolbar {
+          align-items: flex-start;
+        }
+
+        .filters {
+          width: 100%;
+        }
+
+        .filter {
+          flex: 1 1 calc(50% - 10px);
+          text-align: center;
+        }
+
+        thead th,
+        tbody td,
+        .category-header th {
+          padding: 12px;
+        }
+
+        thead th,
+        .category-header th {
+          font-size: 0.72rem;
+        }
+
+        tbody td {
+          font-size: 0.92rem;
+        }
+
+        td.feature {
+          width: 46%;
+          font-size: 0.98rem;
+        }
+
+        td.status {
+          width: 14%;
+        }
+
+        td.notes {
+          width: 26%;
+          font-size: 0.85rem;
+        }
+
+        .chip {
+          min-width: 40px;
+          padding: 6px 9px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero" aria-labelledby="page-title">
+        <h1 id="page-title">Air vs Cursor</h1>
+        <p class="subtitle">
+          A compact, offline-friendly comparison of agent workflows, platform access,
+          task handling, and editor features. Filter the table by winner to isolate
+          where each product leads.
+        </p>
+
+        <section class="summary" aria-label="Score summary">
+          <article class="scorecard air">
+            <p class="score-label">Air support count</p>
+            <p class="score-value">
+              <strong id="air-score">0</strong>
+              <span>features available</span>
+            </p>
+          </article>
+          <article class="scorecard cursor">
+            <p class="score-label">Cursor support count</p>
+            <p class="score-value">
+              <strong id="cursor-score">0</strong>
+              <span>features available</span>
+            </p>
+          </article>
+          <article class="scorecard tie">
+            <p class="score-label">Head-to-head ties</p>
+            <p class="score-value">
+              <strong id="tie-score">0</strong>
+              <span>matched outcomes</span>
+            </p>
+          </article>
+        </section>
+
+        <p class="legend-title">Exclusive wins</p>
+        <div class="legend" id="legend" aria-label="Exclusive winner breakdown"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="comparison-heading">
+        <div class="toolbar">
+          <div class="toolbar-copy">
+            <h2 id="comparison-heading">Feature matrix</h2>
+            <p>Use the filters to show all rows, only Air wins, only Cursor wins, or ties.</p>
+          </div>
+          <div class="filters" role="toolbar" aria-label="Comparison filters">
+            <button class="filter active" type="button" data-filter="all" aria-pressed="true">All</button>
+            <button class="filter" type="button" data-filter="air" aria-pressed="false">Air wins</button>
+            <button class="filter" type="button" data-filter="cursor" aria-pressed="false">Cursor wins</button>
+            <button class="filter" type="button" data-filter="tie" aria-pressed="false">Tied</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Feature</th>
+                <th scope="col">Air</th>
+                <th scope="col">Cursor</th>
+                <th scope="col">Notes</th>
+              </tr>
+            </thead>
+            <tbody id="comparison-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const rows = [
+        { category: "Agent Capabilities", feature: "Multi-agent support", air: true, cursor: false, note: "" },
+        { category: "Agent Capabilities", feature: "Run many agents in parallel", air: true, cursor: true, note: "" },
+        { category: "Agent Capabilities", feature: "Multi-workspaces", air: false, cursor: true, note: "" },
+        { category: "Agent Capabilities", feature: "Comments", air: true, cursor: false, note: "" },
+
+        { category: "Platform & Access", feature: "Start from Desktop", air: true, cursor: true, note: "" },
+        { category: "Platform & Access", feature: "Start from Web", air: true, cursor: true, note: "" },
+        { category: "Platform & Access", feature: "Start from Mobile", air: false, cursor: true, note: "" },
+        { category: "Platform & Access", feature: "Start from Slack/GitHub", air: false, cursor: true, note: "" },
+        { category: "Platform & Access", feature: "Windows support", air: false, cursor: true, note: "" },
+        { category: "Platform & Access", feature: "Linux support", air: false, cursor: true, note: "" },
+
+        { category: "Task Management", feature: "Move tasks from Local → Cloud", air: false, cursor: true, note: "" },
+        { category: "Task Management", feature: "Move tasks from Cloud → Local", air: false, cursor: true, note: "" },
+        { category: "Task Management", feature: "Create PR", air: false, cursor: true, note: "" },
+        { category: "Task Management", feature: "Commit & Push", air: false, cursor: true, note: "" },
+
+        { category: "Editor", feature: "Editor with LSPs", air: true, cursor: true, note: "" },
+        { category: "Editor", feature: "Integrated browser", air: true, cursor: true, note: "Not nearly on the same level though" },
+        { category: "Editor", feature: "Plugins", air: false, cursor: true, note: "" },
+        { category: "Editor", feature: "Voice input", air: false, cursor: true, note: "" }
+      ];
+
+      const body = document.getElementById("comparison-body");
+      const airScore = document.getElementById("air-score");
+      const cursorScore = document.getElementById("cursor-score");
+      const tieScore = document.getElementById("tie-score");
+      const legend = document.getElementById("legend");
+      const filters = Array.from(document.querySelectorAll(".filter"));
+
+      function getWinner(row) {
+        if (row.air === row.cursor) {
+          return "tie";
+        }
+        return row.air ? "air" : "cursor";
+      }
+
+      function escapeHtml(value) {
+        return String(value).replace(/[&<>"]/g, (character) => {
+          const entities = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            "\"": "&quot;"
+          };
+
+          return entities[character];
+        });
+      }
+
+      function renderIcon(value) {
+        const label = value ? "Supported" : "Not supported";
+        const symbol = value ? "✓" : "✕";
+        const modifier = value ? "yes" : "no";
+        return `<span class="chip chip--${modifier}" aria-label="${label}" title="${label}">${symbol}</span>`;
+      }
+
+      function renderTable() {
+        const categories = rows.reduce((accumulator, row) => {
+          accumulator[row.category] ||= [];
+          accumulator[row.category].push(row);
+          return accumulator;
+        }, {});
+
+        body.innerHTML = Object.entries(categories)
+          .map(([category, categoryRows]) => {
+            const rowMarkup = categoryRows
+              .map((row) => {
+                const winner = getWinner(row);
+                const safeCategory = escapeHtml(category);
+                const safeFeature = escapeHtml(row.feature);
+                const note = row.note ? `<span>${escapeHtml(row.note)}</span>` : "";
+
+                return `
+                  <tr data-row data-category="${safeCategory}" data-winner="${winner}">
+                    <td class="feature">${safeFeature}</td>
+                    <td class="status" data-label="Air">${renderIcon(row.air)}</td>
+                    <td class="status" data-label="Cursor">${renderIcon(row.cursor)}</td>
+                    <td class="notes" data-label="Notes">${note}</td>
+                  </tr>
+                `;
+              })
+              .join("");
+
+            const safeCategory = escapeHtml(category);
+
+            return `
+              <tr class="category-header" data-category-header="${safeCategory}">
+                <th colspan="4" scope="rowgroup">${safeCategory}</th>
+              </tr>
+              ${rowMarkup}
+            `;
+          })
+          .join("");
+      }
+
+      function updateScores() {
+        const airSupport = rows.filter((row) => row.air).length;
+        const cursorSupport = rows.filter((row) => row.cursor).length;
+        const airWins = rows.filter((row) => getWinner(row) === "air").length;
+        const cursorWins = rows.filter((row) => getWinner(row) === "cursor").length;
+        const ties = rows.filter((row) => getWinner(row) === "tie").length;
+
+        airScore.textContent = airSupport;
+        cursorScore.textContent = cursorSupport;
+        tieScore.textContent = ties;
+
+        legend.innerHTML = `
+          <span class="winner-pill air">Air wins ${airWins}</span>
+          <span class="winner-pill cursor">Cursor wins ${cursorWins}</span>
+          <span class="winner-pill tie">Tied ${ties}</span>
+        `;
+      }
+
+      function syncCategoryHeaders() {
+        const headers = Array.from(body.querySelectorAll(".category-header"));
+
+        headers.forEach((header, index) => {
+          const nextHeader = headers[index + 1];
+          let row = header.nextElementSibling;
+          let visibleRows = 0;
+
+          while (row && row !== nextHeader) {
+            if (row.matches("[data-row]") && !row.classList.contains("hidden")) {
+              visibleRows += 1;
+            }
+            row = row.nextElementSibling;
+          }
+
+          header.classList.toggle("hidden", visibleRows === 0);
+        });
+      }
+
+      function applyFilter(filterValue) {
+        const dataRows = Array.from(body.querySelectorAll("[data-row]"));
+
+        dataRows.forEach((row) => {
+          const matches = filterValue === "all" || row.dataset.winner === filterValue;
+          row.classList.toggle("hidden", !matches);
+        });
+
+        syncCategoryHeaders();
+      }
+
+      filters.forEach((button) => {
+        button.addEventListener("click", () => {
+          filters.forEach((filter) => {
+            const isActive = filter === button;
+            filter.classList.toggle("active", isActive);
+            filter.setAttribute("aria-pressed", String(isActive));
+          });
+
+          applyFilter(button.dataset.filter);
+        });
+      });
+
+      renderTable();
+      updateScores();
+      applyFilter("all");
+    </script>
+  </body>
+</html>
