@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Snake Game</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1a2e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: monospace;
+      color: #eee;
+    }
+    h1 { margin-bottom: 10px; font-size: 2rem; color: #4ecca3; }
+    #score { margin-bottom: 12px; font-size: 1.2rem; }
+    canvas {
+      border: 2px solid #4ecca3;
+      background: #0f0f23;
+    }
+    #message {
+      margin-top: 14px;
+      font-size: 1rem;
+      color: #aaa;
+      min-height: 1.2em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Snake</h1>
+  <div id="score">Score: 0</div>
+  <canvas id="canvas" width="400" height="400"></canvas>
+  <div id="message">Press any arrow key to start</div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score');
+    const messageEl = document.getElementById('message');
+
+    const CELL = 20;
+    const COLS = canvas.width / CELL;
+    const ROWS = canvas.height / CELL;
+
+    let snake, dir, nextDir, food, score, running, loop;
+
+    function init() {
+      snake = [
+        { x: 10, y: 10 },
+        { x: 9,  y: 10 },
+        { x: 8,  y: 10 },
+      ];
+      dir = { x: 1, y: 0 };
+      nextDir = { x: 1, y: 0 };
+      score = 0;
+      running = false;
+      scoreEl.textContent = 'Score: 0';
+      messageEl.textContent = 'Press any arrow key to start';
+      placeFood();
+      draw();
+    }
+
+    function placeFood() {
+      let pos;
+      do {
+        pos = {
+          x: Math.floor(Math.random() * COLS),
+          y: Math.floor(Math.random() * ROWS),
+        };
+      } while (snake.some(s => s.x === pos.x && s.y === pos.y));
+      food = pos;
+    }
+
+    function start() {
+      if (running) return;
+      running = true;
+      messageEl.textContent = '';
+      clearInterval(loop);
+      loop = setInterval(tick, 130);
+    }
+
+    function tick() {
+      dir = nextDir;
+      const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+
+      // Wall collision
+      if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) {
+        return gameOver();
+      }
+      // Self collision
+      if (snake.some(s => s.x === head.x && s.y === head.y)) {
+        return gameOver();
+      }
+
+      snake.unshift(head);
+
+      if (head.x === food.x && head.y === food.y) {
+        score++;
+        scoreEl.textContent = `Score: ${score}`;
+        placeFood();
+      } else {
+        snake.pop();
+      }
+
+      draw();
+    }
+
+    function gameOver() {
+      clearInterval(loop);
+      running = false;
+      messageEl.textContent = `Game over! Score: ${score} — press R to restart`;
+      draw(true);
+    }
+
+    function draw(dead = false) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Grid dots
+      ctx.fillStyle = '#1a1a3e';
+      for (let x = 0; x < COLS; x++) {
+        for (let y = 0; y < ROWS; y++) {
+          ctx.fillRect(x * CELL + CELL / 2 - 1, y * CELL + CELL / 2 - 1, 2, 2);
+        }
+      }
+
+      // Food
+      ctx.fillStyle = '#ff6b6b';
+      ctx.beginPath();
+      ctx.arc(
+        food.x * CELL + CELL / 2,
+        food.y * CELL + CELL / 2,
+        CELL / 2 - 2, 0, Math.PI * 2
+      );
+      ctx.fill();
+
+      // Snake
+      snake.forEach((seg, i) => {
+        ctx.fillStyle = dead ? '#666' : (i === 0 ? '#4ecca3' : '#3ba88a');
+        const pad = i === 0 ? 1 : 2;
+        ctx.beginPath();
+        ctx.roundRect(
+          seg.x * CELL + pad, seg.y * CELL + pad,
+          CELL - pad * 2, CELL - pad * 2, 3
+        );
+        ctx.fill();
+      });
+    }
+
+    document.addEventListener('keydown', e => {
+      const keys = {
+        ArrowUp:    { x: 0,  y: -1 },
+        ArrowDown:  { x: 0,  y:  1 },
+        ArrowLeft:  { x: -1, y:  0 },
+        ArrowRight: { x: 1,  y:  0 },
+      };
+
+      if (e.key === 'r' || e.key === 'R') {
+        clearInterval(loop);
+        init();
+        return;
+      }
+
+      const d = keys[e.key];
+      if (!d) return;
+      e.preventDefault();
+
+      // Prevent reversing
+      if (d.x === -dir.x && d.y === -dir.y) return;
+      nextDir = d;
+
+      if (!running) start();
+    });
+
+    init();
+  </script>
+</body>
+</html>
